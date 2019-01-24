@@ -39,8 +39,6 @@ exports.readOne = (id, callback) => {
 };
 
 exports.update = (id, text, callback) => {
-  // readdir
-  // callback: _.contains(dir, id)
   fs.readdir(exports.dataDir, (err, files) => {
     if(_.contains(files, id + '.txt')) {
       fs.writeFile(path.join(exports.dataDir, id + '.txt'), text, (err) => {
@@ -58,14 +56,16 @@ exports.update = (id, text, callback) => {
 };
 
 exports.delete = (id, callback) => {
-  var item = items[id];
-  delete items[id];
-  if (!item) {
+  fs.unlink(path.join(exports.dataDir, id +'.txt'), (err) => {
     // report an error if item not found
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback();
-  }
+    if (err) {
+      callback(new Error(`No item with id: ${id}`));
+    } else {
+      var item = items[id];
+      delete items[id];
+      callback();
+    }
+  });
 };
 
 // Config+Initialization code -- DO NOT MODIFY /////////////////////////////////
