@@ -39,13 +39,22 @@ exports.readOne = (id, callback) => {
 };
 
 exports.update = (id, text, callback) => {
-  var item = items[id];
-  if (!item) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    items[id] = text;
-    callback(null, { id, text });
-  }
+  // readdir
+  // callback: _.contains(dir, id)
+  fs.readdir(exports.dataDir, (err, files) => {
+    if(_.contains(files, id + '.txt')) {
+      fs.writeFile(path.join(exports.dataDir, id + '.txt'), text, (err) => {
+        if (err) {
+          callback(new Error(`Error: ${err}`));
+        } else {
+          items[id] = text;
+          callback(null, { id, text });
+        }
+      });
+    } else {
+      callback(new Error(`Error: ${err}`));
+    }
+  });
 };
 
 exports.delete = (id, callback) => {
