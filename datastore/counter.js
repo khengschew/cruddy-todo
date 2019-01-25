@@ -34,7 +34,7 @@ const writeCounter = (count, callback) => {
 // Public API - Fix this function //////////////////////////////////////////////
 
 exports.getNextUniqueId = (callback) => {
-  readCounter((blank, num = 0) => {
+  return readCounter((blank, num = 0) => {
     counter = num;
     return counter + 1;
   })

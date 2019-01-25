@@ -12,11 +12,23 @@ var items = {};
 
 exports.create = (text, callback) => {
   var id;
-  counter.getNextUniqueId((blank, counterString) => {
+  return counter.getNextUniqueId((blank, counterString) => {
     id = counterString;
     items[id] = text;
-    fs.writeFile(path.join(exports.dataDir, id + '.txt'), text, () => { callback(null, { id, text }); });
-  });
+    return {id, text};
+  })
+    .then ((file) => 
+      fs.writeFileAsync(path.join(exports.dataDir, file.id + '.txt'), file.text)
+    )
+    .then ( () => callback(null, {id, text}) )
+    .catch( err => console.error(err) );
+
+  // Original callback format:
+  // counter.getNextUniqueId((blank, counterString) => {
+  //   var id = counterString;
+  //   items[id] = text;
+  //   fs.writeFile(path.join(exports.dataDir, id + '.txt'), text, () => { callback(null, { id, text }); });
+  // });
 };
 
 exports.readAll = (callback) => {
@@ -74,13 +86,14 @@ exports.update = (id, text, callback) => {
 exports.delete = (id, callback) => {
   fs.unlink(path.join(exports.dataDir, id +'.txt'), (err) => {
     // report an error if item not found
-    if (err) {
-      callback(new Error(`No item with id: ${id}`));
-    } else {
-      var item = items[id];
-      delete items[id];
-      callback();
-    }
+    // if (err) {
+    //   callback(new Error(`No item with id: ${id}`));
+    // } else {
+    //   var item = items[id];
+    //   delete items[id];
+    //   callback();
+    // }
+    callback(err);
   });
 };
 
