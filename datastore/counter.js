@@ -1,6 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 const sprintf = require('sprintf-js').sprintf;
+const bb = require('bluebird');
+
+bb.promisifyAll(fs);
 
 var counter = 0;
 
@@ -16,24 +19,16 @@ const zeroPaddedNumber = (num) => {
 };
 
 const readCounter = (callback) => {
-  fs.readFile(exports.counterFile, (err, fileData) => {
-    if (err) {
-      callback(null, 0);
-    } else {
-      callback(null, Number(fileData));
-    }
-  });
+  return fs.readFileAsync(exports.counterFile)
+    .then ( (fileData) => callback(null, Number(fileData)) )
+    .catch ( (err) => callback(null, 0) );
 };
 
 const writeCounter = (count, callback) => {
   var counterString = zeroPaddedNumber(count);
-  fs.writeFile(exports.counterFile, counterString, (err) => {
-    if (err) {
-      throw ('error writing counter');
-    } else {
-      callback(null, counterString);
-    }
-  });
+  return fs.writeFileAsync(exports.counterFile, counterString)
+    .then( () => callback(null, counterString) )
+    .catch( err => callback(err) );
 };
 
 // Public API - Fix this function //////////////////////////////////////////////
@@ -41,9 +36,16 @@ const writeCounter = (count, callback) => {
 exports.getNextUniqueId = (callback) => {
   readCounter((blank, num = 0) => {
     counter = num;
-    counter = counter + 1;
-    writeCounter(counter, callback);
-  });
+    return counter + 1;
+  })
+    .then( (counter) => writeCounter(counter, callback) );
+
+  // Original callback format:
+  // readCounter((blank, num = 0) => {
+  //   counter = num;
+  //   counter = counter + 1;
+  //   writeCounter(counter, callback);
+  // });
 };
 
 
